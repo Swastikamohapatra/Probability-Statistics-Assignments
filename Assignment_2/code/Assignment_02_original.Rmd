@@ -33,10 +33,44 @@ S=\{a,ar,ar^2,ar^{3},\cdots\}.
 $$
 But we have to be careful and put proper conditions in place and modify $S$ in such a way so that it becomes proper probability distributions. 
 
-1. Figure out the necesary conditions and define the probability distribution model using $S$.
-2. Check if mean and variance exists for the probability model. 
-3. Can you find the analytically expression of mean and variance.
-4. From historical data we found the following summary statistics
+\begin{itemize}
+\item [Q1] Figure out the necessary conditions and define the probability distribution model using $S$. 
+\item [A1] We need the following conditions for $S$ to be a pdf:
+\begin{itemize}
+\item [1.] $0<=ar^n <=1 ~~\forall n$.
+\item [2.] $\sum_{n=0}^{}\mathbb{P}(X=n)$ converges to 1, hence we must have that $r<1$.
+\item [3.] Since $\sum_{n=0}^{} ar^n = \frac{a}{1-r}$ and using the above, we must
+have $\mathbb{P}(X=n) = (1-r)r^n$. (It is clear that = $X \sim Geom(1-r)$)
+\end{itemize}
+\item [Q2] Check if mean and variance exists for the probability model. 
+\item [A2] Yes, they exist, since we know the mean and variance of Geometric random variable as done in class. we will derive them now.
+\item [Q3] Can you find the analytically expression of mean and variance?
+\begin{itemize}
+\item [1.] Mean
+\begin{align*}
+E[X] &= \sum_{n=0}n{\mathbb{P}(X=n)}\\
+     &= \sum_{n=0}n(1-r)r^n\\
+     &= r\sum_{n=0}n(1-r)r^{n-1}\\
+     &= r\sum_{n=1}(n-1)(1-r)r^{n-1} + r\sum_{n=1}(1-r)r^{n-1}\\
+     &= rE[X] + r(1-r)(\frac{1}{1-r})\\
+     &= rE[X] + r\\
+\text{Hence,}~ E[X] = \frac{r}{1-r}
+\end{align*}
+\item [2.] Variance
+\begin{align*}
+E[X^2] &= \sum_{n=0}n^2{\mathbb{P}(X=n)}\\
+     &= \sum_{n=0}n^2(1-r)r^n\\
+     &= r\sum_{n=0}n^2(1-r)r^{n-1}\\
+     &= r\sum_{n=1}(n-1)^2(1-r)r^{n-1} + \sum_{n=1}2n(1-r)r^{n} - r\sum_{n=1}(1-r)r^{n-1}\\
+     &= rE[X^2] + 2E[X] - r(1-r)\frac{1}{1-r}\\
+     &= rE[X^2] + \frac{2r}{1-r} - r\\
+\text{Hence,}~ E[X^2] = \frac{r^2 + r}{(1-r)^2}. ~\text{Therefore,}\\
+Var(X) &= E[X^2] - (E[X])^2\\
+       &= \frac{r^2 + r}{(1-r)^2} - \frac{r^2}{(1-r)^2}\\
+       &= \frac{r}{(1-r)^2}\\
+\end{align*}
+\end{itemize}
+\item [Q4] From historical data we found the following summary statistics
 \begin{table}[ht]
 \centering
      \begin{tabular}{c|c|c|c}\hline
@@ -45,14 +79,26 @@ But we have to be careful and put proper conditions in place and modify $S$ in s
      \end{tabular}
 \end{table}
 Using the summary statistics and your newly defined probability distribution model find the following:
- a. What is the probability that home team will score at least one goal?
- b. What is the probability that home team will score at least one goal but less than four goal?
-
-5. Suppose on another thought you want to model it with off-the shelf Poisson probability models. Under the assumption that underlying distribution is Poisson probability find the above probabilities, i.e.,
- a. What is the probability that home team will score at least one goal?
- b. What is the probability that home team will score at least one goal but less than four goal?
-6. Which probability model you would prefer over another?
-7. Write down the likelihood functions of your newly defined probability models and Poisson models. Clearly mention all the assumptions that you are making.
+\begin{itemize}
+\item [1.] What is the probability that home team will score at least one goal?
+\item [Ans]
+\item [2.] What is the probability that home team will score at least one goal but less than four goal?
+\item [Ans]
+\end{itemize}
+\item [Q5] Suppose on another thought you want to model it with off-the shelf Poisson probability models. Under the assumption that underlying distribution is Poisson probability find the above probabilities, i.e.,
+ \begin{itemize}
+ \item [1.] What is the probability that home team will score at least one goal?
+ \item [Ans]
+ \item [2.] What is the probability that home team will score at least one goal but less than four goal?
+ \item [Ans]
+ \end{itemize}
+\item [Q6] Which probability model you would prefer over another?
+\item [A6]
+\item [Q7] Write down the likelihood functions of your newly defined probability models and Poisson models.
+\item [A7]
+\end{itemize}
+Clearly mention all the assumptions that you are making.
+\pagebreak
 
 ## Problem 2 : Simulation Study to Understand Sampling Distribution
 
