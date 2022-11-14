@@ -271,7 +271,6 @@ TCS_rt = diff(log(TCS.NS$TCS.NS.Adjusted))
 Nifty_rt = diff(log(NSEI$NSEI.Adjusted))
 retrn = cbind.xts(TCS_rt,Nifty_rt) 
 retrn = na.omit(data.frame(retrn))
-
 plot(retrn$NSEI.Adjusted,retrn$TCS.NS.Adjusted
      ,pch=20
      ,xlab='Market Return'
@@ -290,14 +289,43 @@ where $\mathbb{E}(\varepsilon)=0$ and $\mathbb{V}ar(\varepsilon)=\sigma^2$.
 
 1. Estimate the parameters of the models $\theta=(\alpha,\beta,\sigma)$ using the method of moments type plug-in estimator discussed in the class.
 
+```{r}
+names(retrn) = c('TCS','Nifty')
+E_Y = mean(retrn[,'TCS'])
+Var_Y = var(retrn[,'TCS'])
+E_X = mean(retrn[,'Nifty'])
+Var_X = var(retrn[,'Nifty'])
+Cov_XY = cov(retrn[,'TCS'],retrn[,'Nifty'])
+beta_hat_1 = Cov_XY/Var_X
+alpha_hat_1 = E_Y - beta_hat_1*E_X
+sigma_hat_1 = sqrt(Var_Y - (beta_hat_1^2)*Var_X)
+cat("Optimal parameters are",c(alpha_hat_1,beta_hat_1,sigma_hat_1))
+```
+
+
 2. Estimate the parameters using the `lm` built-in function of `R`. Note that `lm` using the OLS method.
+
+```{r}
+fit = summary(lm(TCS~Nifty, data=retrn))
+beta_hat_2 = fit$coef[2,1]
+alpha_hat_2 = fit$coef[1,1]
+sigma_hat_2 = fit$sigma
+cat("Optimal parameters are",c(alpha_hat_2,beta_hat_2,sigma_hat_2))
+```
+
 
 3. Fill-up the following table
 
 Parameters | Method of Moments | OLS
 -----------|-------------------|-----
-$\alpha$   |                   |
-$\beta$    |                   |
-$\sigma$   |                   |
+$\alpha$   |    0.0004611214   |  0.0004611214  
+$\beta$    |    0.7436967      |  0.7436967
+$\sigma$   |    0.01618653     |  0.01618873
 
 4. If the current value of Nifty is 18000 and it goes up to 18200. The current value of TCS is Rs. 3200/-. How much you can expect TCS price to go up?
+
+```{r}
+TCS_return = alpha_hat_1 + beta_hat_1 * log(18200/18000)
+TCS_new = 3200*exp(TCS_return)
+cat("New TCS price would be expected to be Rs.", TCS_new)
+```
