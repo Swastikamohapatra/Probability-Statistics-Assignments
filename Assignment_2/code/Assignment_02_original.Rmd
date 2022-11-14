@@ -406,9 +406,7 @@ Note that $\beta_0,\beta_1 \in\mathbb{R}$ and $\sigma \in \mathbb{R}^{+}$.
 
 (ii) Calculate **Bayesian Information Criterion** (BIC) for the model.
 
-## Error in this
-
-```{r}
+```
 C = function(p0){
   NLL = function(x,par){
     mu = with(x, par[1]+par[2]*Holders)
@@ -416,23 +414,23 @@ C = function(p0){
       return ((exp(-0.5*((log(x)-mu)^2/(sigma^2))))/(x*sigma*sqrt(2*pi)))
     }
     LL = c()
-    for (i in 1:64){
+    for (i in 1:63){
       LL = c(LL, f3(x[i,'Claims'],mu[i],par[3]))
     }
     return (-sum(log(LL)))
   }
-  fit = optim(par=p0,NLL,x=data)
+  data1 = data[data["Claims"]!=0,]
+  fit = optim(par=p0,NLL,x=data1)
   cat(cat("Optimal parameters are",fit$par),sep="\n")
   BIC = 3*log(64)+2*fit$value
   cat("The BIC for this model",BIC)
   return(fit$par)
 }
-#pars = C(c(0,0.1,10))
-#plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
-#x = seq(0,4000,length.out=10000)
-#lines(x,pars[1]+pars[2]*x,col='red')
-#grid()
-```
+pars = C(c(0,0.0001,0.3))
+plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
+x = seq(0,4000,length.out=10000)
+lines(x,pars[1]+pars[2]*x,col='red')
+grid()
 
 
 **Part D**: We want to fit the following models:
@@ -442,6 +440,7 @@ $$
 $$
 log(\alpha_i)=\beta_0 + \beta_1 \log(\texttt{Holders}_i), ~~i=1,2,...,n
 $$
+```
 
 ## Error in this
 ```{r}
