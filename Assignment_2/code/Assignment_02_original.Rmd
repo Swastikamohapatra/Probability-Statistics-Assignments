@@ -110,20 +110,72 @@ $$
 The mean and variance are $E(X)=\alpha\sigma$ and $Var(X)=\alpha\sigma^2$. Note that `shape = ` $\alpha$ and `scale = ` $\sigma$.
 
 1. Write a `function` in `R` which will compute the MLE of $\theta=\log(\alpha)$ using `optim` function in `R`. You can name it `MyMLE`
+```{r}
+MyMLE = function(obs, p0){
+  NLL = function(x, par){
+    return (sum((x/par[2]) + (par[1]*log(par[2])) + log(gamma(par[1])) - (par[1]-1)*log(x)))
+  }
+  pars = optim(par=p0,NLL,x=obs)$par
+  return (log(pars[1]))
+}
+```
+
 2. Choose `n=20`, and `alpha=1.5` and `sigma=2.2`
      (i) Simulate $\{X_1,X_2,\cdots,X_n\}$ from `rgamma(n=20,shape=1.5,scale=2.2)`
      (ii) Apply the `MyMLE` to estimate $\theta$ and append the value in a vector
      (iii) Repeat the step (i) and (ii) 1000 times
      (iv) Draw histogram of the estimated MLEs of $\theta$.
      (v) Draw a vertical line using `abline` function at the true value of $\theta$.
-     (vi) Use `quantile` function on estimated $\theta$'s to find the 2.5 and 97.5-percentile points. 
+     (vi) Use `quantile` function on estimated $\theta$'s to find the 2.5 and 97.5-percentile points.
+      
+     
+```{r}
+library(ggplot2)
+P2 = function(n,sim_size,alpha,sigma){
+  alphas = c()
+  for (i in 1:sim_size){
+    x = rgamma(n,shape=alpha,scale=sigma)
+    alphas = c(alphas, MyMLE(x, c(1.5,2.2)))
+  }
+  df_alphas = as.data.frame(alphas)
+  names(df_alphas) = "x"
+  bw = 2 * IQR(alphas) / length(alphas)^(1/3)
+  nbin = (max(alphas)-min(alphas))/bw
+  p = ggplot(df_alphas) + 
+    geom_histogram(aes(x=x), bins=nbin, fill='cyan', color='black') + 
+    geom_vline(xintercept=log(alpha), color='red')+
+    geom_text(aes(x=log(alpha),y=-10,label='Theoretical Value:\n\n'), color='red')+
+    geom_text(aes(x=log(alpha),y=-8,label=round(log(alpha),2)), color='red')+
+    theme_classic()+
+    labs(x='Log alpha', y='',title='Histogram of Log alpha') + 
+    theme(plot.title =element_text(hjust=0.5))
+  print(p)
+  quants = quantile(alphas, probs=seq(0,1,0.025))
+  cat(cat("The 2.5th quantile is", quants[2]),sep="\n")
+  cat(cat("The 97.5th quantile is", quants[40]),sep="\n")
+  cat(cat("The gap between the 2.5th and 97.5th quantile is", quants[40]-quants[2]),sep="\n")
+}
+P2(20,1000,1.5,2.2)
+```
+     
 3.  Choose `n=40`, and `alpha=1.5` and repeat the (2).
+
+```{r}
+P2(40,1000,1.5,2.2)
+```
+
 4.  Choose `n=100`, and `alpha=1.5` and repeat the (2).
-5. Check if the gap between 2.5 and 97.5-percentile points are shrinking as sample size `n` is increasing?
 
-*Hint*: Perhaps you should think of writing a single `function` where you will provide the values of `n`, `sim_size`, `alpha` and `sigma`; and it will return the desired output. 
+```{r}
+P2(100,1000,1.5,2.2)
+```
 
-\newpage
+
+5. Check if the gap between 2.5 and 97.5-percentile points are shrinking as sample size `n` is increasing.\\
+
+Yes, the gap between the 2.5 and 97.5 quantiles is decreasing as we increase the sample size.
+
+\pagebreak
 
 ## Problem 3: Analysis of `faithful` datasets.
 
@@ -137,27 +189,95 @@ Fit following three models using MLE method and calculate **Akaike information c
 $$
 \mathbb{P}(60<\texttt{waiting}<70)
 $$
-
 (i) **Model 1**:
 $$
-f(x)=p*Gamma(x|\alpha,\sigma_1)+(1-p)N(x|\mu,\sigma_2^2),~~0<p<1
+f(x)=p*Gamma(x|\alpha,\sigma_1)+(1-p)*N(x|\mu,\sigma_2^2),~~0<p<1
 $$
+```{r, fig.show='hide'}
+MyMLE1 = function(p0){
+  x = faithful$waiting
+  NLL = function(x, par){
+    return (-sum(log(par[1]*dgamma(x,par[2],scale=par[3]) + (1-par[1])*dnorm(x,par[4],par[5]))))
+  }
+  fit = optim(par=p0,NLL,x=x,lower=c(0,0,0,-Inf,0),upper=c(1,Inf,Inf,Inf,Inf),
+              method="L-BFGS-B")
+  cat(cat("Optimal (p,alpha,sigma_1,mu,sigma_2) is",fit$par),sep="\n")
+  cat("AIC is",2*NLL(x,fit$par)+10)
+  return(fit$par)
+}
+par = MyMLE1(c(0.5,65,1,85,1))
+pdf1 = function(x, par){
+  return(par[1]*dgamma(x,par[2],scale=par[3]) + (1-par[1])*dnorm(x,par[4],par[5]))
+}
+x = seq(40,100,length.out=10000)
+hist(faithful$waiting,xlab = 'Waiting',probability = T,col='white',main='Predicted Density plot')
+lines(x,pdf1(x,par),col='red')
+```
+
 
 (ii) **Model 2**:
 $$
-f(x)=p*Gamma(x|\alpha_1,\sigma_1)+(1-p)Gamma(x|\alpha_2,\sigma_2),~~0<p<1
+f(x)=p*Gamma(x|\alpha_1,\sigma_1)+(1-p)*Gamma(x|\alpha_2,\sigma_2),~~0<p<1
 $$
+```{r, fig.show='hide'}
+MyMLE2 = function(p0){
+  x = faithful$waiting
+  NLL = function(x, par){
+    return (-sum(log(par[1]*dgamma(x,par[2],scale=par[3]) + (1-par[1])*dgamma(x,par[4],scale=par[5]))))  
+  }
+  fit = optim(par=p0,NLL,x=x,lower=c(0,0,0,0,0),upper=c(1,Inf,Inf,Inf,Inf),
+              method="L-BFGS-B")
+  cat(cat("Optimal (p,alpha_1,sigma_1,alpha_2,sigma_2) is",fit$par),sep="\n")
+  cat("AIC is",2*NLL(x,fit$par)+10)
+  return(fit$par)
+}
+par = MyMLE2(c(0.5,65,1,85,1))
+pdf2 = function(x, par){
+  return(par[1]*dgamma(x,par[2],scale=par[3]) + (1-par[1])*dgamma(x,par[4],scale=par[5]))
+}
+x = seq(40,100,length.out=10000)
+hist(faithful$waiting,xlab = 'Waiting',probability = T,col='white',main='Predicted Density plot')
+lines(x,pdf2(x,par),col='red')
+```
+
+
 
 (iii) **Model 3**:
 $$
-f(x)=p*logNormal(x|\mu_1,\sigma_1^2)+(1-p)logNormal(x|\mu_1,\sigma_1^2),~~0<p<1
+f(x)=p*logNormal(x|\mu_1,\sigma_1^2)+(1-p)*logNormal(x|\mu_1,\sigma_1^2),~~0<p<1
 $$
+```{r, fig.show='hide'}
+MyMLE3 = function(p0){
+  x = faithful$waiting
+  NLL = function(x, par){
+    return (-sum(log(par[1]*dlnorm(x,par[2],par[3]) + (1-par[1])*dlnorm(x,par[4],par[5])))) 
+  }
+  fit = optim(par=p0,NLL,x=x,lower=c(0,-Inf,0,-Inf,0),upper=c(1,Inf,Inf,Inf,Inf),
+              method="L-BFGS-B")
+  cat(cat("Optimal (p,alpha_1,sigma_1,alpha_2,sigma_2) is",fit$par),sep="\n")
+  cat("AIC is",2*NLL(x,fit$par)+10)
+  return(fit$par)
+}
+par = MyMLE3(c(0.5,4,0.2,4.4,0.08))
+pdf3 = function(x, par){
+  return(par[1]*dlnorm(x,par[2],par[3]) + (1-par[1])*dlnorm(x,par[4],par[5]))
+}
+x = seq(40,100,length.out=1000)
+hist(faithful$waiting,xlab = 'Waiting',probability = T,col='white',main='Predicted Density plot')
+lines(x,pdf3(x,par),col='red')
+```
+The AIC of the three models are 2076.18, 2076.117, 2075.42. Since AIC is a measure of information lost by a model, lower the AIC, better the model. So, given the data, Model 3 is the best fit for the data. We will use this model to predict $\mathbb{P}(60<X<70)$.
 
-\newpage
+```{r}
+p = par[1]
+print(p*(plnorm(70,par[2],par[3])-plnorm(60,par[2],par[3])) + (1-p)*(plnorm(70,par[4],par[5])-plnorm(60,par[4],par[5])))
+```
+
+\pagebreak
 
 ## Problem 4: Modelling Insurance Claims
 
-Consider the `Insurance` datasets in the `MASS` package. The data given in data frame `Insurance` consist of the numbers of policyholders of an insurance company who were exposed to risk, and the numbers of car insurance claims made by those policyholders in the third quarter of 1973.
+Consider the `Insurance` data sets in the `MASS` package. The data given in data frame `Insurance` consist of the numbers of policyholders of an insurance company who were exposed to risk, and the numbers of car insurance claims made by those policyholders in the third quarter of 1973.
 
 This data frame contains the following columns:
 
@@ -173,6 +293,8 @@ This data frame contains the following columns:
 
 ```{r}
 library(MASS)
+attach(Insurance)
+data = Insurance[,c('Holders','Claims')]
 plot(Insurance$Holders,Insurance$Claims
      ,xlab = 'Holders',ylab='Claims',pch=20)
 grid()
@@ -198,6 +320,41 @@ $$
 (i) Clearly write down the negative-log-likelihood function in `R`. Then use `optim` function to estimate MLE of $\theta=(\beta_0,\beta_1,\sigma)$
 (ii) Calculate **Bayesian Information Criterion** (BIC) for the model.
 
+```{r}
+b = cov(data[,"Holders"],data[,"Claims"])/var(data[,"Holders"])
+print(b)
+print(mean(data[,"Claims"]) - b*mean(data[,"Holders"]))
+print(sqrt(var(data[,"Claims"]) - (b^2)*var(data[,"Holders"])))
+```
+
+
+```{r}
+A = function(p0){
+  NLL = function(x,par){
+    mu = with(x, par[1]+par[2]*Holders)
+    f1 = function(x,mu,sigma){
+      return ((exp(-0.5*((x-mu)^2/(sigma^2))))/(sigma*sqrt(2*pi)))
+    }
+    LL = c()
+    for (i in 1:64){
+      LL = c(LL, f1(x[i,'Claims'],mu[i],par[3]))
+    }
+    return (-sum(log(LL)))
+  }
+  fit = optim(par=p0,NLL,x=data)
+  cat(cat("Optimal parameters are",fit$par),sep="\n")
+  BIC = 3*log(64)+2*fit$value
+  cat("The BIC for this model",BIC)
+  return(fit$par)
+}
+pars = A(c(0,0.1,10))
+plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
+x = seq(0,4000,length.out=10000)
+lines(x,pars[1]+pars[2]*x,col='red')
+grid()
+```
+
+
 **Part B**: Now we want to fit the same model with change in distribution:
 $$
 \texttt{Claims}_i=\beta_0 + \beta_1~\texttt{Holders}_i + \varepsilon_i,~~~i=1,2,\cdots,n
@@ -207,6 +364,33 @@ $$
 (i) Clearly write down the negative-log-likelihood function in `R`. Then use `optim` function to estimate MLE of $\theta=(\beta_0,\beta_1,\sigma)$
 
 (ii) Calculate **Bayesian Information Criterion** (BIC) for the model.
+
+```{r}
+B = function(p0){
+  NLL = function(x,par){
+    mu = with(x, par[1]+par[2]*Holders)
+    f2 = function(x,mu,sigma){
+      return ((exp(-(abs(x-mu)/(sigma))))/(2*sigma))
+    }
+    LL = c()
+    for (i in 1:64){
+      LL = c(LL, f2(x[i,'Claims'],mu[i],par[3]^2))
+    }
+    return (-sum(log(LL)))
+  }
+  fit = optim(par=p0,NLL,x=data)
+  cat(cat("Optimal parameters are",fit$par),sep="\n")
+  BIC = 3*log(64)+2*fit$value
+  cat("The BIC for this model",BIC)
+  return(fit$par)
+}
+pars = B(c(0,0.1,10))
+plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
+x = seq(0,4000,length.out=10000)
+lines(x,pars[1]+pars[2]*x,col='red')
+grid()
+```
+
 
 **Part C**: We want to fit the following models:
 $$
@@ -222,6 +406,35 @@ Note that $\beta_0,\beta_1 \in\mathbb{R}$ and $\sigma \in \mathbb{R}^{+}$.
 
 (ii) Calculate **Bayesian Information Criterion** (BIC) for the model.
 
+## Error in this
+
+```{r}
+C = function(p0){
+  NLL = function(x,par){
+    mu = with(x, par[1]+par[2]*Holders)
+    f3 = function(x,mu,sigma){
+      return ((exp(-0.5*((log(x)-mu)^2/(sigma^2))))/(x*sigma*sqrt(2*pi)))
+    }
+    LL = c()
+    for (i in 1:64){
+      LL = c(LL, f3(x[i,'Claims'],mu[i],par[3]))
+    }
+    return (-sum(log(LL)))
+  }
+  fit = optim(par=p0,NLL,x=data)
+  cat(cat("Optimal parameters are",fit$par),sep="\n")
+  BIC = 3*log(64)+2*fit$value
+  cat("The BIC for this model",BIC)
+  return(fit$par)
+}
+#pars = C(c(0,0.1,10))
+#plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
+#x = seq(0,4000,length.out=10000)
+#lines(x,pars[1]+pars[2]*x,col='red')
+#grid()
+```
+
+
 **Part D**: We want to fit the following models:
 $$
 \texttt{Claims}_i\sim Gamma(\alpha_i,\sigma), where
@@ -230,10 +443,39 @@ $$
 log(\alpha_i)=\beta_0 + \beta_1 \log(\texttt{Holders}_i), ~~i=1,2,...,n
 $$
 
+## Error in this
+```{r}
+D = function(p0){
+  NLL = function(x,par){
+    alpha = with(x, par[1]+par[2]*log(Holders))
+    f4 = function(x,alpha,sigma){
+      return ((exp(-x/sigma)*x^(alpha-1))/((sigma^alpha)*gamma(alpha)))
+    }
+    LL = c()
+    for (i in 1:64){
+      LL = c(LL, f4(x[i,'Claims'],exp(alpha[i]),par[3]))
+    }
+    return (-sum(log(LL)))
+  }
+  fit = optim(par=p0,NLL,x=data)
+  cat(cat("Optimal parameters are",fit$par),sep="\n")
+  BIC = 3*log(64)+2*fit$value
+  cat("The BIC for this model",BIC)
+  return(fit$par)
+}
+#pars = D(c(0,0.1,10))
+#plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
+#x = seq(0,4000,length.out=10000)
+#lines(x,pars[1]+pars[2]*x,col='red')
+#grid()
+```
 
 
 (iii) Compare the BIC of all three models
 
+```{r}
+#Have to fix models first.
+```
 ## Problem 5: Computational Finance - Modelling Stock prices
 
 Following piece of code download the prices of TCS since 2007
