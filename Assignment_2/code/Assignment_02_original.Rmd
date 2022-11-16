@@ -1,9 +1,24 @@
 ---
-title: "**Probability and Statistics with R**"
-author: "**Assignment 2**"
-date: "Submission Nov 16-2022 (Wednesday)"
-output: pdf_document
+title: '**Probability and Statistics with R**'
+author: 
+   - Arvind Raghavendran MDS202214
+   - Swastika Mohapatra MDS202245
+subtitle: '**Assignment 2**'
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes:
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,warning=FALSE, message = FALSE, 
+                      fig.height = 5, fig.width = 10, fig.align = "center")
+```
+
 
 **Note**: Below I explain how you collaborate on `GitHub`.
 
@@ -24,6 +39,8 @@ output: pdf_document
 15. If the result is reproduced then she or he would accept and merge the code in final repository.
 16. At the end you submit the link of the repository in the moodle.
 17. The entire process will be evaluated.
+
+\pagebreak 
 
 ## Problem 1
 
@@ -47,28 +64,28 @@ have $\mathbb{P}(X=n) = (1-r)r^n$. (It is clear that = $X \sim Geom(1-r)$)
 \item [Q3] Can you find the analytically expression of mean and variance?
 \begin{itemize}
 \item [1.] Mean
-\begin{align*}
-E[X] &= \sum_{n=0}n{\mathbb{P}(X=n)}\\
-     &= \sum_{n=0}n(1-r)r^n\\
-     &= r\sum_{n=0}n(1-r)r^{n-1}\\
-     &= r\sum_{n=1}(n-1)(1-r)r^{n-1} + r\sum_{n=1}(1-r)r^{n-1}\\
-     &= rE[X] + r(1-r)(\frac{1}{1-r})\\
-     &= rE[X] + r\\
-\text{Hence,}~ E[X] = \frac{r}{1-r}
-\end{align*}
+\begin{eqnarray*}
+E[X] & = & \sum_{n=0}n{\mathbb{P}(X=n)}\\
+     & = & \sum_{n=0}n(1-r)r^n\\
+     & = & r\sum_{n=0}n(1-r)r^{n-1}\\
+     & = & r\sum_{n=1}(n-1)(1-r)r^{n-1} + r\sum_{n=1}(1-r)r^{n-1}\\
+     & = & rE[X] + r(1-r)(\frac{1}{1-r})\\
+     & = & rE[X] + r\\
+\Rightarrow E[X] & = & \frac{r}{1-r}
+\end{eqnarray*}
 \item [2.] Variance
-\begin{align*}
-E[X^2] &= \sum_{n=0}n^2{\mathbb{P}(X=n)}\\
-     &= \sum_{n=0}n^2(1-r)r^n\\
-     &= r\sum_{n=0}n^2(1-r)r^{n-1}\\
-     &= r\sum_{n=1}(n-1)^2(1-r)r^{n-1} + \sum_{n=1}2n(1-r)r^{n} - r\sum_{n=1}(1-r)r^{n-1}\\
-     &= rE[X^2] + 2E[X] - r(1-r)\frac{1}{1-r}\\
-     &= rE[X^2] + \frac{2r}{1-r} - r\\
-\text{Hence,}~ E[X^2] = \frac{r^2 + r}{(1-r)^2}. ~\text{Therefore,}\\
-Var(X) &= E[X^2] - (E[X])^2\\
-       &= \frac{r^2 + r}{(1-r)^2} - \frac{r^2}{(1-r)^2}\\
-       &= \frac{r}{(1-r)^2}\\
-\end{align*}
+\begin{eqnarray*}
+E[X^2] & = & \sum_{n=0}n^2{\mathbb{P}(X=n)}\\
+     & = & \sum_{n=0}n^2(1-r)r^n\\
+     & = & r\sum_{n=0}n^2(1-r)r^{n-1}\\
+     & = & r\sum_{n=1}(n-1)^2(1-r)r^{n-1} + \sum_{n=1}2n(1-r)r^{n} - r\sum_{n=1}(1-r)r^{n-1}\\
+     & = & rE[X^2] + 2E[X] - r(1-r)\frac{1}{1-r}\\
+     & = & rE[X^2] + \frac{2r}{1-r} - r\\
+\Rightarrow E[X^2] & = & \frac{r^2 + r}{(1-r)^2}.\\
+\text{Therefore,}\ Var(X) & = & E[X^2] - (E[X])^2\\
+       & = & \frac{r^2 + r}{(1-r)^2} - \frac{r^2}{(1-r)^2}\\
+       & = & \frac{r}{(1-r)^2}\\
+\end{eqnarray*}
 \end{itemize}
 \item [Q4] From historical data we found the following summary statistics
 \begin{table}[ht]
@@ -80,24 +97,63 @@ Var(X) &= E[X^2] - (E[X])^2\\
 \end{table}
 Using the summary statistics and your newly defined probability distribution model find the following:
 \begin{itemize}
+\item The above summary statistics do not seem to follow from a Geometric distribution since if we assume mean is true and solve for $r$, the variance is incorrect, and vice versa. But for this question, we will model our parameters using the mean. So if $\frac{r}{1-r} = 1.5$, then $r=0.6$, meaning that our model has a variance of $3.5$.
 \item [1.] What is the probability that home team will score at least one goal?
 \item [Ans]
+\begin{align*}
+\mathbb{P}(\text{atleast one goal}) 
+&= 1 - \mathbb{P}(\text{no goal})\\
+&= 1 - (1-r)\\
+&= r\\
+&= 0.6\\
+\end{align*}
 \item [2.] What is the probability that home team will score at least one goal but less than four goal?
 \item [Ans]
+\begin{align*}
+\mathbb{P}(1<=X<4) 
+&= \sum_{i=1}^{3} \mathbb{P}(X=i)\\
+&= \sum_{i=1}^{3} (1-r)r^i\\
+&= r(1-r^3)\\
+&= 0.47\\
+\end{align*}
 \end{itemize}
 \item [Q5] Suppose on another thought you want to model it with off-the shelf Poisson probability models. Under the assumption that underlying distribution is Poisson probability find the above probabilities, i.e.,
  \begin{itemize}
- \item [1.] What is the probability that home team will score at least one goal?
- \item [Ans]
- \item [2.] What is the probability that home team will score at least one goal but less than four goal?
- \item [Ans]
- \end{itemize}
-\item [Q6] Which probability model you would prefer over another?
-\item [A6]
+ \item Once again, we will model it using the mean as parameter. The given summary statistics cannot be that of a Poisson distribution, since it has unequal mean and variance, but like in the previous question, we will assume mean is correct and hence, $\lambda=1.5$. So, $\mathbb{P}(X=n) = \frac{e^{-\lambda}\lambda^n}{n!}$
+\item [1.] What is the probability that home team will score at least one goal?
+\item [Ans]
+\begin{align*}
+\mathbb{P}(\text{atleast one goal}) 
+&= 1 - \mathbb{P}(\text{no goal})\\
+&= 1 - e^{-\lambda}\\
+&= 0.77\\
+\end{align*}
+\item [2.] What is the probability that home team will score at least one goal but less than four goal?
+\item [Ans]
+\begin{align*}
+\mathbb{P}(1<=X<4) 
+&= \sum_{i=1}^{3} \mathbb{P}(X=i)\\
+&= \sum_{i=1}^{3} \frac{e^{-\lambda}\lambda^i}{i!}\\
+&= 0.758\\
+\end{align*}
+\end{itemize}\item [Q6] Which probability model you would prefer over another?
+\begin{table}[ht]
+\centering
+     \begin{tabular}{c|c|c|c}\hline
+     Model & Mean &  Median & Variance\\ \hline
+     Expected & 1.5 & 1 & 2.25 \\ \hline
+     Geometric & 1.5 & 2 & 3.5\\ \hline
+     Poisson & 1.5 & 1 & 1.5\\ \hline
+     \end{tabular}
+\end{table}
+\item [A6] Poisson has the least variance and also seems to have central tendencies closer to the expected values, hence it could be a better fit.
 \item [Q7] Write down the likelihood functions of your newly defined probability models and Poisson models.
 \item [A7]
+\begin{itemize}
+\item [(a)] $\mathcal{L}(r|(x_1,x_2,..,x_n)) = \Pi_{i}(1-r)r^{x_i} = (1-r)r^{\sum_{}^{}x_i}$
+\item [(b)] $\mathcal{L}(\lambda|(x_1,x_2,..,x_n)) = \Pi_{i=1}^{n}\frac{e^{-\lambda}\lambda^{x_i}}{x_i!} = \frac{e^{-n\lambda}\lambda^{\sum_{i=1}^{n}x_i}}{\Pi_{i=1}^{n}x_i!}$
 \end{itemize}
-Clearly mention all the assumptions that you are making.
+\end{itemize}
 \pagebreak
 
 ## Problem 2 : Simulation Study to Understand Sampling Distribution
@@ -142,7 +198,7 @@ P2 = function(n,sim_size,alpha,sigma){
   bw = 2 * IQR(alphas) / length(alphas)^(1/3)
   nbin = (max(alphas)-min(alphas))/bw
   p = ggplot(df_alphas) + 
-    geom_histogram(aes(x=x), bins=nbin, fill='cyan', color='black') + 
+    geom_histogram(aes(x=x), bins=nbin, fill='aquamarine', color='black') + 
     geom_vline(xintercept=log(alpha), color='red')+
     geom_text(aes(x=log(alpha),y=-10,label='Theoretical Value:\n\n'), color='red')+
     geom_text(aes(x=log(alpha),y=-8,label=round(log(alpha),2)), color='red')+
@@ -171,7 +227,7 @@ P2(100,1000,1.5,2.2)
 ```
 
 
-5. Check if the gap between 2.5 and 97.5-percentile points are shrinking as sample size `n` is increasing.\\
+5. Check if the gap between 2.5 and 97.5-percentile points are shrinking as sample size `n` is increasing. 
 
 Yes, the gap between the 2.5 and 97.5 quantiles is decreasing as we increase the sample size.
 
@@ -193,7 +249,7 @@ $$
 $$
 f(x)=p*Gamma(x|\alpha,\sigma_1)+(1-p)*N(x|\mu,\sigma_2^2),~~0<p<1
 $$
-```{r, fig.show='hide'}
+```{r}
 MyMLE1 = function(p0){
   x = faithful$waiting
   NLL = function(x, par){
@@ -219,7 +275,7 @@ lines(x,pdf1(x,par),col='red')
 $$
 f(x)=p*Gamma(x|\alpha_1,\sigma_1)+(1-p)*Gamma(x|\alpha_2,\sigma_2),~~0<p<1
 $$
-```{r, fig.show='hide'}
+```{r}
 MyMLE2 = function(p0){
   x = faithful$waiting
   NLL = function(x, par){
@@ -246,7 +302,7 @@ lines(x,pdf2(x,par),col='red')
 $$
 f(x)=p*logNormal(x|\mu_1,\sigma_1^2)+(1-p)*logNormal(x|\mu_1,\sigma_1^2),~~0<p<1
 $$
-```{r, fig.show='hide'}
+```{r}
 MyMLE3 = function(p0){
   x = faithful$waiting
   NLL = function(x, par){
@@ -319,13 +375,6 @@ $$
 
 (i) Clearly write down the negative-log-likelihood function in `R`. Then use `optim` function to estimate MLE of $\theta=(\beta_0,\beta_1,\sigma)$
 (ii) Calculate **Bayesian Information Criterion** (BIC) for the model.
-
-```{r}
-b = cov(data[,"Holders"],data[,"Claims"])/var(data[,"Holders"])
-print(b)
-print(mean(data[,"Claims"]) - b*mean(data[,"Holders"]))
-print(sqrt(var(data[,"Claims"]) - (b^2)*var(data[,"Holders"])))
-```
 
 
 ```{r}
@@ -406,7 +455,9 @@ Note that $\beta_0,\beta_1 \in\mathbb{R}$ and $\sigma \in \mathbb{R}^{+}$.
 
 (ii) Calculate **Bayesian Information Criterion** (BIC) for the model.
 
-```
+Note that we have one point in our data set where `Claims`=0. Since the support of Lognormal distribution is (0,$\infty$), we remove this point.
+
+```{r}
 C = function(p0){
   NLL = function(x,par){
     mu = with(x, par[1]+par[2]*Holders)
@@ -431,6 +482,7 @@ plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
 x = seq(0,4000,length.out=10000)
 lines(x,pars[1]+pars[2]*x,col='red')
 grid()
+```
 
 
 **Part D**: We want to fit the following models:
@@ -440,19 +492,16 @@ $$
 $$
 log(\alpha_i)=\beta_0 + \beta_1 \log(\texttt{Holders}_i), ~~i=1,2,...,n
 $$
-```
-
-## Error in this
 ```{r}
 D = function(p0){
   NLL = function(x,par){
-    alpha = with(x, par[1]+par[2]*log(Holders))
+    alpha = with(x, exp(par[1]+par[2]*log(Holders)))
     f4 = function(x,alpha,sigma){
       return ((exp(-x/sigma)*x^(alpha-1))/((sigma^alpha)*gamma(alpha)))
     }
     LL = c()
     for (i in 1:64){
-      LL = c(LL, f4(x[i,'Claims'],exp(alpha[i]),par[3]))
+      LL = c(LL, f4(x[i,'Claims'],alpha[i],par[3]))
     }
     return (-sum(log(LL)))
   }
@@ -462,19 +511,20 @@ D = function(p0){
   cat("The BIC for this model",BIC)
   return(fit$par)
 }
-#pars = D(c(0,0.1,10))
-#plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
-#x = seq(0,4000,length.out=10000)
-#lines(x,pars[1]+pars[2]*x,col='red')
-#grid()
+pars = D(c(0,0,45))
+plot(Insurance$Holders,Insurance$Claims ,xlab = 'Holders',ylab='Claims',pch=20)
+x = seq(0,4000,length.out=10000)
+lines(x,pars[1]+pars[2]*x,col='red')
+grid()
 ```
 
+\begin{itemize}
+\item[Q] Compare the BIC of all three models.
+\item[A] The BIC of the models are 510.76, 498.69, 568.02 and 639.24 respectively. Since the number of parameters being estimated are the same in all cases (3), lower the BIC, higher the likelihood and hence better the model. Based on this remark, the second model, i.e., $\epsilon_i \sim \text{Laplace}(0,\sigma^2)$ is the best fit for the data. The Gauss-Markov assumptions ($\epsilon_i \sim \mathcal{N}(0,\sigma^2)$) follow closely as the second best model. The 4th model ($\epsilon_i \sim \Gamma(0,\sigma^2)$) fits the worst.
+\end{itemize}
 
-(iii) Compare the BIC of all three models
+\pagebreak
 
-```{r}
-#Have to fix models first.
-```
 ## Problem 5: Computational Finance - Modelling Stock prices
 
 Following piece of code download the prices of TCS since 2007
@@ -570,3 +620,4 @@ TCS_return = alpha_hat_1 + beta_hat_1 * log(18200/18000)
 TCS_new = 3200*exp(TCS_return)
 cat("New TCS price would be expected to be Rs.", TCS_new)
 ```
+
